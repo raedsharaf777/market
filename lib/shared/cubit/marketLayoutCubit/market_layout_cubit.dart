@@ -4,16 +4,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:market/constants/constants.dart';
 import 'package:market/models/home_model.dart';
 import 'package:market/models/login_model.dart';
+import 'package:market/models/logout_model.dart';
 import 'package:market/modules/categories/categories_screen.dart';
 import 'package:market/modules/favorites/favorites_screen.dart';
+import 'package:market/modules/login/login_screen.dart';
 import 'package:market/modules/products/products_screen.dart';
 import 'package:market/modules/settings/settings_screen.dart';
+import 'package:market/shared/components/components.dart';
+import 'package:market/shared/network/local/cache_helper.dart';
 import 'package:market/shared/network/remote/dio_helper.dart';
 import 'package:meta/meta.dart';
 import '../../../models/categories_model.dart';
 import '../../../models/change_favorites_model.dart';
 import '../../../models/get_favorites_model.dart';
-import '../../../models/profile_model.dart';
 import '../../network/end_points.dart';
 
 part 'market_layout_state.dart';
@@ -26,6 +29,7 @@ class MarketLayoutCubit extends Cubit<MarketLayoutState> {
   GetFavoritesModel? getFavoritesModel;
   LoginModel? profileModel;
   LoginModel? updateModel;
+  LogOutModel? logOutModel;
 
   static MarketLayoutCubit get(context) => BlocProvider.of(context);
   int currentIndex = 0;
@@ -173,9 +177,45 @@ class MarketLayoutCubit extends Cubit<MarketLayoutState> {
     ).then((value) {
       updateModel = LoginModel.fromJson(value.data);
       emit(MarketLayoutUpdateSuccessState(updateModel!));
+      if (state is MarketLayoutUpdateSuccessState) {
+        return getProfileData();
+      }
     }).catchError((error) {
       print('the error of Home cubit---->> ${error.toString()}');
       emit(MarketLayoutUpdateErrorState(error.toString()));
     });
   }
+
+//...................................LogOut.....................................
+//   void logOutUser() {
+//     emit(MarketLayoutLogOutLoadingState());
+//     DioHelper.postData(
+//       url: LOGOUT,
+//       token: token,
+//       data: {
+//         "fcm_token": "SomeFcmToken",
+//       },
+//     ).then((value) {
+//       logOutModel = LogOutModel.fromJson(value.data);
+//
+//       emit(MarketLayoutLogOutSuccessState(logOutModel));
+//     }).catchError((error) {
+//       print('the error of LogOut cubit---->> ${error.toString()}');
+//       emit(MarketLayoutLogOutErrorState(error.toString()));
+//     });
+//   }
+
+  void logOutUserByCacheHelper(context) {
+    emit(MarketLayoutLogOutLoadingState());
+    CacheHelper.removeData(key: 'token')!.then((value) {
+      if (value == true) {
+        navigateAndFinish(context: context, widget: LoginScreen());
+      }
+      emit(MarketLayoutLogOutSuccessState());
+    }).catchError((error) {
+      print('the error of LogOut cubit---->> ${error.toString()}');
+      emit(MarketLayoutLogOutErrorState(error.toString()));
+    });
+  }
 }
+
