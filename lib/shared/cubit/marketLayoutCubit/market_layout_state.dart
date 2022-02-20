@@ -86,3 +86,17 @@ class MarketLayoutUpdateErrorState extends MarketLayoutState {
 
   MarketLayoutUpdateErrorState(this.error);
 }
+//...............................LogOut.........................................
+class MarketLayoutLogOutLoadingState extends MarketLayoutState {}
+
+class MarketLayoutLogOutSuccessState extends MarketLayoutState {
+ // final LogOutModel? logOutModel;
+
+  MarketLayoutLogOutSuccessState();
+}
+
+class MarketLayoutLogOutErrorState extends MarketLayoutState {
+  final String error;
+
+  MarketLayoutLogOutErrorState(this.error);
+}
